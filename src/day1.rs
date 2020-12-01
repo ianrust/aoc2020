@@ -39,13 +39,12 @@ pub fn part2(input: &Vec<u32>) -> u32 {
 
 use itertools::Itertools;
 
-#[aoc(day1, part1, iter)]
-pub fn part1_iter(input: &Vec<u32>) -> u64 {
+fn find_match(input: &Vec<u32>, sum_match: u32, num: usize) -> u32 {
     let mut result = 0;
-    for pair in input.iter().combinations(2) {
-        let literal = pair.into_iter().map(|x| *x as u64);
-        let sum: u64 = literal.clone().sum();
-        if sum == 2020 {
+    for pair in input.iter().combinations(num) {
+        let literal = pair.iter().map(|x| **x as u32);
+        let sum: u32 = literal.clone().sum();
+        if sum == sum_match {
             result = literal.clone().product();
             break;
         }
@@ -53,18 +52,14 @@ pub fn part1_iter(input: &Vec<u32>) -> u64 {
     result
 }
 
+#[aoc(day1, part1, iter)]
+pub fn part1_iter(input: &Vec<u32>) -> u32 {
+    find_match(input, 2020, 2)
+}
+
 #[aoc(day1, part2, iter)]
-pub fn part2_iter(input: &Vec<u32>) -> u64 {
-    let mut result = 0;
-    for pair in input.iter().combinations(3) {
-        let literal = pair.into_iter().map(|x| *x as u64);
-        let sum: u64 = literal.clone().sum();
-        if sum == 2020 {
-            result = literal.clone().product();
-            break;
-        }
-    }
-    result
+pub fn part2_iter(input: &Vec<u32>) -> u32 {
+    find_match(input, 2020, 3)
 }
 
 #[cfg(test)]
@@ -79,6 +74,6 @@ mod tests {
                 299\r\n
                 675\r\n
                 1456";
-        assert_eq!(part1(&input_generator(example)), 100);
+        assert_eq!(part1(&input_generator(example)), 514579);
     }
 }
