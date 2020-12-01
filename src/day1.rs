@@ -11,7 +11,7 @@ pub fn input_generator(input: &str) -> Vec<u32> {
         }).collect()
 }
 
-#[aoc(day1, part1)]
+#[aoc(day1, part1, loop)]
 pub fn part1(input: &Vec<u32>) -> u32 {
     for a in input {
         for b in input {
@@ -23,7 +23,7 @@ pub fn part1(input: &Vec<u32>) -> u32 {
     0
 }
 
-#[aoc(day1, part2)]
+#[aoc(day1, part2, loop)]
 pub fn part2(input: &Vec<u32>) -> u32 {
     for a in input {
         for b in input {
@@ -35,6 +35,36 @@ pub fn part2(input: &Vec<u32>) -> u32 {
         }
     }
     0
+}
+
+use itertools::Itertools;
+
+#[aoc(day1, part1, iter)]
+pub fn part1_iter(input: &Vec<u32>) -> u64 {
+    let mut result = 0;
+    for pair in input.iter().combinations(2) {
+        let literal = pair.into_iter().map(|x| *x as u64);
+        let sum: u64 = literal.clone().sum();
+        if sum == 2020 {
+            result = literal.clone().product();
+            break;
+        }
+    }
+    result
+}
+
+#[aoc(day1, part2, iter)]
+pub fn part2_iter(input: &Vec<u32>) -> u64 {
+    let mut result = 0;
+    for pair in input.iter().combinations(3) {
+        let literal = pair.into_iter().map(|x| *x as u64);
+        let sum: u64 = literal.clone().sum();
+        if sum == 2020 {
+            result = literal.clone().product();
+            break;
+        }
+    }
+    result
 }
 
 #[cfg(test)]
