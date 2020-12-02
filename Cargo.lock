@@ -36,7 +36,14 @@ dependencies = [
  "aoc-runner",
  "aoc-runner-derive",
  "itertools",
+ "substring",
 ]
+
+[[package]]
+name = "autocfg"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
 name = "either"
@@ -127,6 +134,15 @@ dependencies = [
  "itoa",
  "ryu",
  "serde",
+]
+
+[[package]]
+name = "substring"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "134bb6744b6f5e4cf735bf590fd987c710600fb95db9af3be36491dea326b69b"
+dependencies = [
+ "autocfg",
 ]
 
 [[package]]
