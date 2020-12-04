@@ -5,11 +5,10 @@ struct Slope {
 
 #[aoc_generator(day3)]
 pub fn input_generator(input: &str) -> Vec<Vec<bool>> {
-    input.lines().map(|l| {
-        l.trim().chars().map(|c| {
-            c == '#'
-        }).collect()
-    }).collect()
+    input
+        .lines()
+        .map(|l| l.trim().chars().map(|c| c == '#').collect())
+        .collect()
 }
 
 fn count_trees(input: &Vec<Vec<bool>>, slope: &Slope) -> u32 {
@@ -37,35 +36,26 @@ fn count_trees(input: &Vec<Vec<bool>>, slope: &Slope) -> u32 {
 
 #[aoc(day3, part1)]
 pub fn part1(input: &Vec<Vec<bool>>) -> u32 {
-    let slope = Slope{
-        right: 3,
-        down: 1,
-    };
+    let slope = Slope { right: 3, down: 1 };
     count_trees(input, &slope)
 }
 
 #[aoc(day3, part2)]
 pub fn part2(input: &Vec<Vec<bool>>) -> u32 {
-    let slopes = vec![Slope{
-        right: 1,
-        down: 1,
-    }, Slope{
-        right: 3,
-        down: 1,
-    }, Slope{
-        right: 5,
-        down: 1,
-    }, Slope{
-        right: 7,
-        down: 1,
-    }, Slope{
-        right: 1,
-        down: 2,
-    }];
+    let slopes = vec![
+        Slope { right: 1, down: 1 },
+        Slope { right: 3, down: 1 },
+        Slope { right: 5, down: 1 },
+        Slope { right: 7, down: 1 },
+        Slope { right: 1, down: 2 },
+    ];
 
-    slopes.iter().map(|slope| {
-        count_trees(input, &slope)
-    }).collect::<Vec<u32>>().iter().product()
+    slopes
+        .iter()
+        .map(|slope| count_trees(input, &slope))
+        .collect::<Vec<u32>>()
+        .iter()
+        .product()
 }
 
 #[cfg(test)]
@@ -74,7 +64,7 @@ mod tests {
 
     #[test]
     fn sample1() {
-        let sample =   "..##.......
+        let sample = "..##.......
                         #...#...#..
                         .#....#..#.
                         ..#.#...#.#
@@ -90,7 +80,7 @@ mod tests {
 
     #[test]
     fn sample2() {
-        let sample =   "..##.......
+        let sample = "..##.......
                         #...#...#..
                         .#....#..#.
                         ..#.#...#.#

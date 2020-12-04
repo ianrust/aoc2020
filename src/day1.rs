@@ -1,6 +1,7 @@
 #[aoc_generator(day1)]
 pub fn input_generator(input: &str) -> Vec<u32> {
-    input.lines()
+    input
+        .lines()
         .map(|l| {
             let s = String::from(l.trim());
             if let Ok(n) = s.parse::<u32>() {
@@ -8,15 +9,16 @@ pub fn input_generator(input: &str) -> Vec<u32> {
             } else {
                 0
             }
-        }).collect()
+        })
+        .collect()
 }
 
 #[aoc(day1, part1, loop)]
 pub fn part1(input: &Vec<u32>) -> u32 {
     for a in input {
         for b in input {
-            if a+b == 2020 {
-                return a*b;
+            if a + b == 2020 {
+                return a * b;
             }
         }
     }
@@ -28,8 +30,8 @@ pub fn part2(input: &Vec<u32>) -> u32 {
     for a in input {
         for b in input {
             for c in input {
-                if a+b+c == 2020 {
-                    return a*b*c;
+                if a + b + c == 2020 {
+                    return a * b * c;
                 }
             }
         }

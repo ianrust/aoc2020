@@ -9,7 +9,7 @@ pub struct Passport {
     byr: Option<u32>,
     cid: Option<u32>,
     hgt: Option<String>,
-    iyr: Option<u32>
+    iyr: Option<u32>,
 }
 
 impl Default for Passport {
@@ -29,37 +29,43 @@ impl Default for Passport {
 
 #[aoc_generator(day4)]
 pub fn input_generator(input: &str) -> Vec<Passport> {
-    input.split("\n\n").map(|l| {
-        let mut passport = Passport{..Default::default()};
-        for item in l.trim().split(&[' ', '\n'][..]) {
-            let kv: Vec<&str> = item.trim().split(":").collect();
-            match kv[0] {
-                "ecl" => passport.ecl = Some(String::from(kv[1].trim())),
-                "pid" => passport.pid = Some(String::from(kv[1].trim())),
-                "eyr" => passport.eyr = Some(kv[1].trim().parse::<u32>().unwrap()),
-                "hcl" => passport.hcl = Some(String::from(kv[1].trim())),
-                "byr" => passport.byr = Some(kv[1].trim().parse::<u32>().unwrap()),
-                "cid" => passport.cid = Some(kv[1].trim().parse::<u32>().unwrap()),
-                "hgt" => passport.hgt = Some(String::from(kv[1].trim())),
-                "iyr" => passport.iyr = Some(kv[1].trim().parse::<u32>().unwrap()),
-                _ => {},
+    input
+        .split("\n\n")
+        .map(|l| {
+            let mut passport = Passport {
+                ..Default::default()
+            };
+            for item in l.trim().split(&[' ', '\n'][..]) {
+                let kv: Vec<&str> = item.trim().split(":").collect();
+                match kv[0] {
+                    "ecl" => passport.ecl = Some(String::from(kv[1].trim())),
+                    "pid" => passport.pid = Some(String::from(kv[1].trim())),
+                    "eyr" => passport.eyr = Some(kv[1].trim().parse::<u32>().unwrap()),
+                    "hcl" => passport.hcl = Some(String::from(kv[1].trim())),
+                    "byr" => passport.byr = Some(kv[1].trim().parse::<u32>().unwrap()),
+                    "cid" => passport.cid = Some(kv[1].trim().parse::<u32>().unwrap()),
+                    "hgt" => passport.hgt = Some(String::from(kv[1].trim())),
+                    "iyr" => passport.iyr = Some(kv[1].trim().parse::<u32>().unwrap()),
+                    _ => {}
+                }
             }
-        }
-        passport
-    }).collect()
+            passport
+        })
+        .collect()
 }
 
 #[aoc(day4, part1)]
 pub fn part1(passports: &Vec<Passport>) -> u32 {
     let mut count = 0;
     for passport in passports {
-        if passport.ecl.is_some() && 
-            passport.pid.is_some() && 
-            passport.eyr.is_some() && 
-            passport.hcl.is_some() &&
-            passport.byr.is_some() &&
-            passport.hgt.is_some() &&
-            passport.iyr.is_some() {
+        if passport.ecl.is_some()
+            && passport.pid.is_some()
+            && passport.eyr.is_some()
+            && passport.hcl.is_some()
+            && passport.byr.is_some()
+            && passport.hgt.is_some()
+            && passport.iyr.is_some()
+        {
             count += 1;
         }
     }
@@ -77,7 +83,6 @@ pub fn part2(passports: &Vec<Passport>) -> u32 {
     let ecl_re = Regex::new("(amb)|(blu)|(brn)|(gry)|(grn)|(hzl)|(oth)").unwrap();
 
     for passport in passports {
-
         // hgt validity
         let mut hgt_valid = false;
         if let Some(hgt_string) = &passport.hgt {
@@ -92,21 +97,24 @@ pub fn part2(passports: &Vec<Passport>) -> u32 {
             }
         }
 
-        if passport.ecl.is_some() && 
-            passport.pid.is_some() && 
-            passport.eyr.is_some() && 
-            passport.hcl.is_some() &&
-            passport.byr.is_some() &&
-            passport.hgt.is_some() &&
-            passport.iyr.is_some() &&
-            passport.byr.unwrap() >= 1920 && passport.byr.unwrap() <= 2002 &&
-            passport.iyr.unwrap() >= 2010 && passport.iyr.unwrap() <= 2020 &&
-            passport.eyr.unwrap() >= 2020 && passport.eyr.unwrap() <= 2030 &&
-            hgt_valid &&
-            hcl_re.is_match(passport.hcl.as_ref().unwrap()) &&
-            ecl_re.is_match(passport.ecl.as_ref().unwrap()) &&
-            passport.pid.as_ref().unwrap().chars().count() == 9
-            {
+        if passport.ecl.is_some()
+            && passport.pid.is_some()
+            && passport.eyr.is_some()
+            && passport.hcl.is_some()
+            && passport.byr.is_some()
+            && passport.hgt.is_some()
+            && passport.iyr.is_some()
+            && passport.byr.unwrap() >= 1920
+            && passport.byr.unwrap() <= 2002
+            && passport.iyr.unwrap() >= 2010
+            && passport.iyr.unwrap() <= 2020
+            && passport.eyr.unwrap() >= 2020
+            && passport.eyr.unwrap() <= 2030
+            && hgt_valid
+            && hcl_re.is_match(passport.hcl.as_ref().unwrap())
+            && ecl_re.is_match(passport.ecl.as_ref().unwrap())
+            && passport.pid.as_ref().unwrap().chars().count() == 9
+        {
             count += 1;
         }
     }
@@ -119,7 +127,7 @@ mod tests {
 
     #[test]
     fn sample1() {
-        let sample =   "ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
+        let sample = "ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
                         byr:1937 iyr:2017 cid:147 hgt:183cm
 
                         iyr:2013 ecl:amb cid:350 eyr:2023 pid:028048884
@@ -155,7 +163,7 @@ mod tests {
 
     #[test]
     fn sample3() {
-        let sample =   "pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
+        let sample = "pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
                         hcl:#623a2f
 
                         eyr:2029 ecl:blu cid:129 byr:1989

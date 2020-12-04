@@ -27,20 +27,23 @@ pub struct PasswordCandidate {
 
 #[aoc_generator(day2)]
 pub fn input_generator(input: &str) -> Vec<PasswordCandidate> {
-    input.lines().map( |l| {
-        let s = String::from(l.trim());
-        let components: Vec<&str> = s.split(" ").collect();
-        let range: Vec<&str> = components[0].split("-").collect();
-        let cand = PasswordCandidate{
-            rule: Rule{
-                low: range[0].parse::<usize>().unwrap(),
-                high: range[1].parse::<usize>().unwrap(),
-                letter: components[1].chars().next().unwrap(),
-            },
-            password: String::from(components[2]),
-        };
-        cand
-    }).collect()
+    input
+        .lines()
+        .map(|l| {
+            let s = String::from(l.trim());
+            let components: Vec<&str> = s.split(" ").collect();
+            let range: Vec<&str> = components[0].split("-").collect();
+            let cand = PasswordCandidate {
+                rule: Rule {
+                    low: range[0].parse::<usize>().unwrap(),
+                    high: range[1].parse::<usize>().unwrap(),
+                    letter: components[1].chars().next().unwrap(),
+                },
+                password: String::from(components[2]),
+            };
+            cand
+        })
+        .collect()
 }
 
 #[aoc(day2, part1)]
@@ -58,8 +61,8 @@ pub fn part1(input: &Vec<PasswordCandidate>) -> u32 {
 pub fn part2(input: &Vec<PasswordCandidate>) -> u32 {
     let mut count: u32 = 0;
     for cand in input.iter() {
-        let char1 = cand.password.chars().nth(cand.rule.low-1).unwrap();
-        let char2 = cand.password.chars().nth(cand.rule.high-1).unwrap();
+        let char1 = cand.password.chars().nth(cand.rule.low - 1).unwrap();
+        let char2 = cand.password.chars().nth(cand.rule.high - 1).unwrap();
         if (char1 == cand.rule.letter) ^ (char2 == cand.rule.letter) {
             count += 1;
         }
