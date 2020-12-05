@@ -29,32 +29,25 @@ pub fn input_generator(input: &str) -> Vec<SeatSpec> {
 
 fn bit_cast(bits: &[bool]) -> u8 {
     bits.iter()
-        .fold(0, |byte: u8, &bit| (byte << 1) + (bit as u8))
+        .fold(0, |byte: u8, &bit: &bool| (byte << 1) + (bit as u8))
+}
+
+fn to_id_iter(input: &Vec<SeatSpec>) -> impl Iterator<Item = u32> + '_ {
+    input.into_iter().map(|spec| {
+        let row = bit_cast(&spec.row_bits);
+        let col = bit_cast(&spec.col_bits);
+        (row as u32 * 8) + col as u32
+    })
 }
 
 #[aoc(day5, part1)]
 pub fn part1(input: &Vec<SeatSpec>) -> u32 {
-    input
-        .into_iter()
-        .map(|spec| {
-            let row = bit_cast(&spec.row_bits);
-            let col = bit_cast(&spec.col_bits);
-            (row as u32 * 8) + col as u32
-        })
-        .max()
-        .unwrap() as u32
+    to_id_iter(input).max().unwrap() as u32
 }
 
 #[aoc(day5, part2)]
 pub fn part2(input: &Vec<SeatSpec>) -> u32 {
-    let mut ids = input
-        .into_iter()
-        .map(|spec| {
-            let row = bit_cast(&spec.row_bits);
-            let col = bit_cast(&spec.col_bits);
-            (row as u32 * 8) + col as u32
-        })
-        .collect::<Vec<u32>>();
+    let mut ids = to_id_iter(input).collect::<Vec<u32>>();
     ids.sort();
     let mut id = 0;
     for id_window in ids.windows(2) {
