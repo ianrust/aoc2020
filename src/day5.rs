@@ -1,5 +1,3 @@
-use std::convert::TryFrom;
-
 const RS: usize = 7;
 const CS: usize = 3;
 
@@ -29,16 +27,9 @@ pub fn input_generator(input: &str) -> Vec<SeatSpec> {
         .collect::<Vec<SeatSpec>>()
 }
 
-fn bit_cast(bits: &[bool], msb_pos: usize) -> u8 {
-    let mut bits_iter = bits.iter().enumerate();
-    let mut byte: u8 = 0;
-    while let Some((pos, &bit)) = bits_iter.next() {
-        if bit {
-            let pos_value = 1 << u32::try_from(msb_pos - 1 - pos).unwrap();
-            byte += pos_value;
-        }
-    }
-    byte
+fn bit_cast(bits: &[bool]) -> u8 {
+    bits.iter()
+        .fold(0, |byte: u8, &bit| (byte << 1) + (bit as u8))
 }
 
 #[aoc(day5, part1)]
@@ -46,8 +37,8 @@ pub fn part1(input: &Vec<SeatSpec>) -> u32 {
     input
         .into_iter()
         .map(|spec| {
-            let row = bit_cast(&spec.row_bits, RS);
-            let col = bit_cast(&spec.col_bits, CS);
+            let row = bit_cast(&spec.row_bits);
+            let col = bit_cast(&spec.col_bits);
             (row as u32 * 8) + col as u32
         })
         .max()
@@ -59,8 +50,8 @@ pub fn part2(input: &Vec<SeatSpec>) -> u32 {
     let mut ids = input
         .into_iter()
         .map(|spec| {
-            let row = bit_cast(&spec.row_bits, RS);
-            let col = bit_cast(&spec.col_bits, CS);
+            let row = bit_cast(&spec.row_bits);
+            let col = bit_cast(&spec.col_bits);
             (row as u32 * 8) + col as u32
         })
         .collect::<Vec<u32>>();
