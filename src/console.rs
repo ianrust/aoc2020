@@ -1,99 +1,146 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ProgramState {
     pub accumulator: i32,
-    pub current_instruction: i32,
-    pub visited_instructions: Vec<i32>,
+    pub current_instruction: usize,
+    pub visited_instructions: Vec<usize>,
 }
 
-fn step(program: &Vec<(String, i32)>, program_state: &mut ProgramState) {
-    if let Some(instruction) = program.get(program_state.current_instruction as usize) {
-        match instruction.0.as_str() {
-            "nop" => {
-                program_state.current_instruction += 1;
-            }
-            "acc" => {
-                program_state.accumulator += instruction.1;
-                program_state.current_instruction += 1;
-            }
-            "jmp" => {
-                program_state.current_instruction += instruction.1;
-            }
-            _ => {}
+impl ProgramState {
+    fn new() -> Self {
+        ProgramState {
+            accumulator: 0,
+            current_instruction: 0,
+            visited_instructions: Vec::<usize>::new(),
         }
-    } else {
-        panic!("ran out of bounds of program memory (check a jmp or similar)");
     }
 }
 
-pub fn run_from(
-    program: &Vec<(String, i32)>,
-    starting_program_state: &ProgramState,
-) -> Result<ProgramState, ProgramState> {
-    let mut program_state = ProgramState {
-        accumulator: starting_program_state.accumulator,
-        current_instruction: starting_program_state.current_instruction,
-        visited_instructions: starting_program_state.visited_instructions.clone(),
-    };
-    loop {
+#[derive(Clone)]
+pub struct Instruction {
+    op: String,
+    value: i32,
+}
+
+#[derive(Clone)]
+pub struct Program {
+    instructions: Vec<Instruction>,
+}
+
+impl Program {
+    pub fn as_ref(&self) -> &Self {
+        self
+    }
+
+    pub fn parse(input: &str) -> Self {
+        Program {
+            instructions: input
+                .lines()
+                .map(|l| {
+                    let mut op_pair = l.trim().split(" ");
+                    if let (Some(op), Some(val)) = (op_pair.next(), op_pair.next()) {
+                        Instruction {
+                            op: String::from(op),
+                            value: val.parse::<i32>().expect("Invalid modifer to parse"),
+                        }
+                    } else {
+                        panic!("encountered badly formed row")
+                    }
+                })
+                .collect::<Vec<Instruction>>(),
+        }
+    }
+
+    pub fn twiddle(&mut self, program_state: &ProgramState) {
+        let instruction = &mut self.instructions[program_state.current_instruction];
+        match instruction.op.as_str() {
+            "nop" => instruction.op = String::from("jmp"),
+            "jmp" => instruction.op = String::from("nop"),
+            "acc" => instruction.op = String::from("acc"),
+            _ => panic!("Invalid op to twiddle"),
+        };
+    }
+
+    fn step(&self, program_state: &ProgramState) -> Result<ProgramState, ProgramState> {
+        let mut next_program_state = program_state.clone();
+
         // terminate on infinite loop
-        match program_state
+        match next_program_state
             .visited_instructions
             .binary_search(&program_state.current_instruction)
         {
-            Ok(_) => return Err(program_state),
+            Ok(_) => return Err(next_program_state),
             Err(ind) => {
-                program_state
+                next_program_state
                     .visited_instructions
                     .insert(ind, program_state.current_instruction);
             }
         }
-        // terminate on reaching final instruction (1 out of program bounds)
-        if program_state.current_instruction as usize == program.len() {
-            return Ok(program_state);
+
+        let instruction = self
+            .instructions
+            .get(program_state.current_instruction)
+            .expect("ran out of bounds of program memory (check a jmp or similar)");
+
+        match instruction.op.as_str() {
+            "nop" => {
+                next_program_state.current_instruction += 1;
+            }
+            "acc" => {
+                next_program_state.accumulator += instruction.value;
+                next_program_state.current_instruction += 1;
+            }
+            "jmp" => {
+                if instruction.value > 0 {
+                    next_program_state.current_instruction += instruction.value as usize;
+                } else {
+                    next_program_state.current_instruction -= (-instruction.value) as usize;
+                }
+            }
+            _ => {}
         }
 
-        step(program, &mut program_state);
+        Ok(next_program_state)
     }
-}
 
-pub fn run(program: &Vec<(String, i32)>) -> Result<ProgramState, ProgramState> {
-    let program_state = ProgramState {
-        accumulator: 0,
-        current_instruction: 0,
-        visited_instructions: Vec::<i32>::new(),
-    };
-    run_from(program, &program_state)
-}
-
-fn twiddle(program: &mut Vec<(String, i32)>, program_state: &ProgramState) {
-    let mut instruction = &mut program[program_state.current_instruction as usize];
-    if instruction.0.as_str() == "nop" {
-        instruction.0 = String::from("jmp");
-    } else if instruction.0.as_str() == "jmp" {
-        instruction.0 = String::from("nop");
-    }
-}
-
-pub fn fix_and_run(program: &Vec<(String, i32)>) -> Result<ProgramState, ProgramState> {
-    let mut program_state = ProgramState {
-        accumulator: 0,
-        current_instruction: 0,
-        visited_instructions: Vec::<i32>::new(),
-    };
-    let mut modified_program = program.clone();
-
-    // change program at each line (doesn't always change), see if it completes. if not, go to next instruction
-    loop {
-        twiddle(&mut modified_program, &program_state);
-
-        match run_from(&modified_program, &program_state) {
-            Ok(state) => return Ok(state),
-            Err(_) => {
-                // try again
-                modified_program = program.clone();
+    pub fn run_from(
+        &self,
+        starting_program_state: &ProgramState,
+    ) -> Result<ProgramState, ProgramState> {
+        let mut program_state = starting_program_state.clone();
+        loop {
+            // terminate on reaching final instruction (1 out of program bounds)
+            if program_state.current_instruction == self.instructions.len() {
+                return Ok(program_state);
+            }
+            match self.step(&program_state) {
+                Ok(state) => program_state = state,
+                error => return error,
             }
         }
+    }
 
-        step(&modified_program, &mut program_state);
+    pub fn run(&self) -> Result<ProgramState, ProgramState> {
+        let program_state = ProgramState::new();
+        self.run_from(&program_state)
+    }
+
+    pub fn fix_and_run(&self) -> Result<ProgramState, ProgramState> {
+        let mut program_state = ProgramState::new();
+        let mut modified_program = self.clone();
+        // change program at each line (doesn't always change), see if it completes. if not, go to next instruction
+        loop {
+            modified_program.twiddle(&program_state);
+            // run from this point to see if it terminates or infinitely loops
+            match modified_program.run_from(&program_state) {
+                Ok(state) => return Ok(state),
+                Err(_) => {
+                    // try again, ie return to normal
+                    modified_program.twiddle(&program_state);
+                }
+            }
+            program_state = modified_program
+                .step(&program_state)
+                .expect("infinitely looped, not fixed");
+        }
     }
 }

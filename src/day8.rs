@@ -1,34 +1,22 @@
 use crate::console::*;
 
 #[aoc_generator(day8)]
-pub fn input_generator(input: &str) -> Vec<(String, i32)> {
-    input
-        .lines()
-        .map(|l| {
-            let mut op_pair = l.trim().split(" ");
-            let instruction: (String, i32);
-            if let (Some(op), Some(val)) = (op_pair.next(), op_pair.next()) {
-                instruction = (String::from(op), val.parse::<i32>().unwrap());
-            } else {
-                panic!("encountered badly formed row")
-            }
-            instruction
-        })
-        .collect::<Vec<(String, i32)>>()
+pub fn input_generator(input: &str) -> Program {
+    Program::parse(input)
 }
 
 #[aoc(day8, part1)]
-pub fn part1(program: &Vec<(String, i32)>) -> i32 {
-    match run(program) {
+pub fn part1(program: &Program) -> i32 {
+    match program.run() {
         Ok(_) => panic!("this should not return correctly"),
         Err(state_after_single_loop) => return state_after_single_loop.accumulator,
     };
 }
 
 #[aoc(day8, part2)]
-pub fn part2(program: &Vec<(String, i32)>) -> i32 {
-    match fix_and_run(program) {
-        Ok(state_after_single_loop) => return state_after_single_loop.accumulator,
+pub fn part2(program: &Program) -> i32 {
+    match program.fix_and_run() {
+        Ok(state_after_completion) => return state_after_completion.accumulator,
         Err(_) => panic!("this should complete"),
     };
 }
