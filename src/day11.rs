@@ -46,7 +46,7 @@ fn step_sight(map: &mut Vec<Vec<SeatState>>) {
     let mut new_emps = Vec::<(usize, usize)>::new();
     for r in 0..height {
         for c in 0..width {
-            let mut stopped = vec![false; 8];
+            let mut stopped = [false; 8];
             let mut step = 1;
             let mut occ_count: u8 = 0;
             loop {
