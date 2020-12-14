@@ -66,32 +66,14 @@ fn test_waits(test_timestamp: u128, ids: &[(usize, &u128)]) -> bool {
     true
 }
 
-fn find_factor_slow(ids: &[(usize, &u128)]) -> u128 {
-    let first = ids[0];
-    println!("last , {:?}, {:?}", first, ids);
-    let mut trial_earliest = *first.1 - first.0 as u128;
+fn find_factor(step: u128, start: u128, ids: &[(usize, &u128)]) -> (u128, u128) {
+    let mut trial_earliest = start;
     while !test_waits(trial_earliest, &ids) {
-        trial_earliest += *first.1;
+        trial_earliest += step;
     }
-    trial_earliest
-}
-
-fn find_factor(mult_factor: u128, first_elem_mult: u128, ids: &[(usize, &u128)]) -> (u128, u128) {
-    let second_to_last = ids[ids.len() - 1];
-    let mut trial_earliest = (first_elem_mult + 1) * ids[0].1 - ids[0].0 as u128;
-    while !test_waits(trial_earliest, &ids) {
-        trial_earliest += ids[0].1;
-    }
-    println!(
-        "trial earliest: {}, mult_factor: {}, second_to_last: {:?}, {}",
-        trial_earliest,
-        mult_factor,
-        second_to_last,
-        (trial_earliest + second_to_last.0 as u128) / second_to_last.1
-    );
     (
-        (trial_earliest + second_to_last.0 as u128) / second_to_last.1 / mult_factor,
-        (trial_earliest + ids[0].0 as u128 - ids[0].1) / ids[0].1,
+        trial_earliest,
+        (trial_earliest + ids[0].0 as u128) / ids[0].1,
     )
 }
 
@@ -102,26 +84,18 @@ pub fn part2(notes: &Notes) -> u128 {
         .iter()
         .enumerate()
         .collect::<Vec<(usize, &u128)>>();
-    id_sorted.sort_by(|a, b| (b.1).partial_cmp(&a.1).expect("bad comparison"));
     // remove zeroes
     id_sorted.retain(|a| *a.1 != 0u128);
-    let mut mult_factor = 1;
-    let mut first_elem_mult = 0;
+    let mut step = 1;
+    let mut start = *id_sorted[0].1;
     for l in 1..id_sorted.len() + 1 {
-        println!(
-            "mult_factor: {:?}, l: {}, len: {}",
-            mult_factor,
-            l,
-            id_sorted.len()
-        );
-        let factor = find_factor(mult_factor, first_elem_mult, &id_sorted[0..l]);
-        mult_factor = factor.0;
-        first_elem_mult = factor.1;
-        let slow_factor = find_factor_slow(&id_sorted[0..l]);
-        println!("slow factor, {}", slow_factor,);
-        println!("{}, {}, {}", l, id_sorted.len(), mult_factor);
+        let factor = find_factor(step, start, &id_sorted[0..l]);
+        start = factor.0;
+        let second_factor = find_factor(step, start + step, &id_sorted[0..l]);
+        step = second_factor.0 - factor.0;
     }
-    (first_elem_mult + 1) * id_sorted[0].1 - id_sorted[0].0 as u128 + 1
+
+    start
 }
 
 #[cfg(test)]
