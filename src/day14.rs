@@ -5,16 +5,16 @@ use std::collections::HashMap;
 #[derive(Debug)]
 pub struct CodeLine {
     mask: bool,
-    address: u128,
-    value: u128,
+    address: u64,
+    value: u64,
 }
 
 impl CodeLine {
     pub fn new() -> CodeLine {
         CodeLine {
             mask: false,
-            address: u128::MAX,
-            value: u128::MAX,
+            address: u64::MAX,
+            value: u64::MAX,
         }
     }
 }
@@ -30,7 +30,7 @@ pub fn input_generator(input: &str) -> Vec<CodeLine> {
             let rhs = assign_items.next().expect("bad parse of lhs").trim();
             if lhs.eq("mask") {
                 // (address, value)
-                let (a, v) = rhs.chars().fold((0u128, 0u128), |values, bit| match bit {
+                let (a, v) = rhs.chars().fold((0u64, 0u64), |values, bit| match bit {
                     'X' => (values.0 << 1, values.1 << 1),
                     '1' => ((values.0 + 1) << 1, (values.1 + 1) << 1),
                     '0' => ((values.0 + 1) << 1, values.1 << 1),
@@ -50,24 +50,24 @@ pub fn input_generator(input: &str) -> Vec<CodeLine> {
                         .get(1)
                         .unwrap()
                         .as_str()
-                        .parse::<u128>()
+                        .parse::<u64>()
                         .unwrap(), // parse the address
-                    value: rhs.parse::<u128>().unwrap(), // specifies what to change them to
+                    value: rhs.parse::<u64>().unwrap(), // specifies what to change them to
                 }
             }
         })
         .collect::<Vec<CodeLine>>()
 }
 
-fn mask_set(value: u128, mask_line: &CodeLine) -> u128 {
+fn mask_set(value: u64, mask_line: &CodeLine) -> u64 {
     let inverse_address = !mask_line.address;
     (inverse_address & value) + mask_line.value
 }
 
-fn mask_address(address: u128, mask_line: &CodeLine) -> Vec<usize> {
+fn mask_address(address: u64, mask_line: &CodeLine) -> Vec<usize> {
     let base_address = (address & mask_line.address) | mask_line.value;
     let unset_bits = !mask_line.address;
-    let mut components = Vec::<u128>::new();
+    let mut components = Vec::<u64>::new();
     for bit_index in 0..36 {
         // this means this bit is set
         let single_bit_number = 1 << bit_index;
@@ -80,8 +80,8 @@ fn mask_address(address: u128, mask_line: &CodeLine) -> Vec<usize> {
     // get all numbers to add to base address
     for comb_len in 1..(components.len() + 1) {
         for comb in components.iter().combinations(comb_len) {
-            let comb_nums = comb.iter().map(|x| **x as u128);
-            addresses.push(comb_nums.sum::<u128>() as usize + base_address as usize);
+            let comb_nums = comb.iter().map(|x| **x as u64);
+            addresses.push(comb_nums.sum::<u64>() as usize + base_address as usize);
         }
     }
 
@@ -90,9 +90,9 @@ fn mask_address(address: u128, mask_line: &CodeLine) -> Vec<usize> {
 
 fn interpret_code(
     code: &Vec<CodeLine>,
-    memset: fn(&mut HashMap<usize, u128>, &CodeLine, &CodeLine) -> (),
-) -> u128 {
-    let mut mem = HashMap::<usize, u128>::new();
+    memset: fn(&mut HashMap<usize, u64>, &CodeLine, &CodeLine) -> (),
+) -> u64 {
+    let mut mem = HashMap::<usize, u64>::new();
     let mut mask_line: &CodeLine = &CodeLine::new();
     for line in code {
         if line.mask {
@@ -105,8 +105,8 @@ fn interpret_code(
 }
 
 #[aoc(day14, part1)]
-pub fn part1(code: &Vec<CodeLine>) -> u128 {
-    fn memset_value(mem: &mut HashMap<usize, u128>, line: &CodeLine, mask_line: &CodeLine) {
+pub fn part1(code: &Vec<CodeLine>) -> u64 {
+    fn memset_value(mem: &mut HashMap<usize, u64>, line: &CodeLine, mask_line: &CodeLine) {
         mem.remove(&(line.address as usize));
         mem.insert(line.address as usize, mask_set(line.value, mask_line));
     }
@@ -114,8 +114,8 @@ pub fn part1(code: &Vec<CodeLine>) -> u128 {
 }
 
 #[aoc(day14, part2)]
-pub fn part2(code: &Vec<CodeLine>) -> u128 {
-    fn memset_address(mem: &mut HashMap<usize, u128>, line: &CodeLine, mask_line: &CodeLine) {
+pub fn part2(code: &Vec<CodeLine>) -> u64 {
+    fn memset_address(mem: &mut HashMap<usize, u64>, line: &CodeLine, mask_line: &CodeLine) {
         for address in mask_address(line.address, mask_line) {
             mem.remove(&address);
             mem.insert(address, line.value);
