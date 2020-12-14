@@ -88,37 +88,40 @@ fn mask_address(address: u128, mask_line: &CodeLine) -> Vec<usize> {
     addresses
 }
 
-#[aoc(day14, part1)]
-pub fn part1(code: &Vec<CodeLine>) -> u128 {
+fn interpret_code(
+    code: &Vec<CodeLine>,
+    memset: fn(&mut HashMap<usize, u128>, &CodeLine, &CodeLine) -> (),
+) -> u128 {
     let mut mem = HashMap::<usize, u128>::new();
     let mut mask_line: &CodeLine = &CodeLine::new();
     for line in code {
         if line.mask {
             mask_line = line;
         } else {
-            mem.remove(&(line.address as usize));
-            mem.insert(line.address as usize, mask_set(line.value, mask_line));
+            memset(&mut mem, line, mask_line);
         }
     }
     mem.iter().fold(0, |sum, (_, value)| sum + value)
 }
 
+#[aoc(day14, part1)]
+pub fn part1(code: &Vec<CodeLine>) -> u128 {
+    fn memset_value(mem: &mut HashMap<usize, u128>, line: &CodeLine, mask_line: &CodeLine) {
+        mem.remove(&(line.address as usize));
+        mem.insert(line.address as usize, mask_set(line.value, mask_line));
+    }
+    interpret_code(code, memset_value)
+}
+
 #[aoc(day14, part2)]
 pub fn part2(code: &Vec<CodeLine>) -> u128 {
-    let mut mem = HashMap::<usize, u128>::new();
-    let mut mask_line: &CodeLine = &CodeLine::new();
-    for line in code {
-        if line.mask {
-            mask_line = line;
-        } else {
-            for address in mask_address(line.address, mask_line) {
-                mem.remove(&address);
-                mem.insert(address, line.value);
-            }
+    fn memset_address(mem: &mut HashMap<usize, u128>, line: &CodeLine, mask_line: &CodeLine) {
+        for address in mask_address(line.address, mask_line) {
+            mem.remove(&address);
+            mem.insert(address, line.value);
         }
     }
-
-    mem.iter().fold(0, |sum, (_, value)| sum + value)
+    interpret_code(code, memset_address)
 }
 
 #[cfg(test)]
