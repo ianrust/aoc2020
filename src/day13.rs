@@ -66,15 +66,12 @@ fn test_waits(test_timestamp: u128, ids: &[(usize, &u128)]) -> bool {
     true
 }
 
-fn find_factor(step: u128, start: u128, ids: &[(usize, &u128)]) -> (u128, u128) {
+fn find_factor(step: u128, start: u128, ids: &[(usize, &u128)]) -> u128 {
     let mut trial_earliest = start;
     while !test_waits(trial_earliest, &ids) {
         trial_earliest += step;
     }
-    (
-        trial_earliest,
-        (trial_earliest + ids[0].0 as u128) / ids[0].1,
-    )
+    trial_earliest
 }
 
 #[aoc(day13, part2)]
@@ -89,10 +86,8 @@ pub fn part2(notes: &Notes) -> u128 {
     let mut step = 1;
     let mut start = *id_sorted[0].1;
     for l in 1..id_sorted.len() + 1 {
-        let factor = find_factor(step, start, &id_sorted[0..l]);
-        start = factor.0;
-        let second_factor = find_factor(step, start + step, &id_sorted[0..l]);
-        step = second_factor.0 - factor.0;
+        start = find_factor(step, start, &id_sorted[0..l]);
+        step = find_factor(step, start + step, &id_sorted[0..l]) - start;
     }
 
     start
