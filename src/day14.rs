@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use regex::Regex;
 use std::collections::HashMap;
 
@@ -67,24 +66,20 @@ fn mask_set(value: u64, mask_line: &CodeLine) -> u64 {
 fn mask_address(address: u64, mask_line: &CodeLine) -> Vec<usize> {
     let base_address = (address & mask_line.address) | mask_line.value;
     let unset_bits = !mask_line.address;
-    let mut components = Vec::<u64>::new();
+    let mut addresses = vec![base_address as usize];
     for bit_index in 0..36 {
         // this means this bit is set
-        let single_bit_number = 1 << bit_index;
+        let single_bit_number =
+         1 << bit_index;
         if unset_bits & single_bit_number == single_bit_number {
-            components.push(single_bit_number);
+            addresses.extend(
+                addresses
+                    .iter()
+                    .map(|a| a + single_bit_number as usize)
+                    .collect::<Vec<usize>>(),
+            );
         }
     }
-
-    let mut addresses = vec![base_address as usize];
-    // get all numbers to add to base address
-    for comb_len in 1..(components.len() + 1) {
-        for comb in components.iter().combinations(comb_len) {
-            let comb_nums = comb.iter().map(|x| **x as u64);
-            addresses.push(comb_nums.sum::<u64>() as usize + base_address as usize);
-        }
-    }
-
     addresses
 }
 
