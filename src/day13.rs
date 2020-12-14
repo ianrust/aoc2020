@@ -83,6 +83,7 @@ pub fn part2(notes: &Notes) -> u128 {
         .collect::<Vec<(usize, &u128)>>();
     // remove zeroes
     id_sorted.retain(|a| *a.1 != 0u128);
+    id_sorted.sort_by(|a, b| (b.1).partial_cmp(&a.1).expect("bad comparison"));
     let mut step = 1;
     let mut start = *id_sorted[0].1;
     for l in 1..id_sorted.len() + 1 {
