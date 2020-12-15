@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 #[aoc_generator(day15)]
 pub fn input_generator(input: &str) -> Vec<u32> {
     input
@@ -8,12 +6,25 @@ pub fn input_generator(input: &str) -> Vec<u32> {
         .collect::<Vec<u32>>()
 }
 
+fn insert_expand(turn_last_spoken: &mut Vec<u32>, number: u32, turn: u32) {
+    // println!(
+    //     "{}, {}, {}",
+    //     (number as usize),
+    //     turn_last_spoken.len(),
+    //     (number as usize) > turn_last_spoken.len()
+    // );
+    if (number as usize) >= turn_last_spoken.len() {
+        turn_last_spoken.resize(number as usize + 1, 0);
+    }
+    turn_last_spoken[number as usize] = turn;
+}
+
 fn get_final_number(numbers: &Vec<u32>, until: u32) -> u32 {
     // key: number, value: turn
-    let mut turn_last_spoken = HashMap::<u32, u32>::new();
+    let mut turn_last_spoken = Vec::<u32>::new();
     // populate beginning
     for (turn_zero, num) in numbers[0..(numbers.len() - 1 as usize)].iter().enumerate() {
-        turn_last_spoken.insert(*num, turn_zero as u32 + 1);
+        insert_expand(&mut turn_last_spoken, *num, turn_zero as u32 + 1);
     }
 
     // play game
@@ -21,15 +32,18 @@ fn get_final_number(numbers: &Vec<u32>, until: u32) -> u32 {
     let mut last_number: u32 = *numbers.last().unwrap();
     for turn in (numbers.len() as u32)..until {
         let number: u32;
-        match turn_last_spoken.get(&last_number) {
+        match turn_last_spoken.get(last_number as usize) {
             Some(last_turn_spoken) => {
-                number = turn - last_turn_spoken;
+                if last_turn_spoken != &0 {
+                    number = turn - last_turn_spoken;
+                } else {
+                    number = 0;
+                }
             }
             None => number = 0,
         }
-        turn_last_spoken.insert(last_number, turn);
+        insert_expand(&mut turn_last_spoken, last_number, turn);
         last_number = number;
-        // println!("{} number", number);
     }
 
     last_number
